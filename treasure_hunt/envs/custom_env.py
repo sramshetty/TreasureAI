@@ -2,15 +2,16 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 import numpy as np
-from gym_game.envs.game_file import GameFile
+from treasure import TreasureHunt
 
 class CustomEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
-        self.game = GameFile()
+        self.game = TreasureHunt()
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Box(np.array([]), np.array([]), dtype=np.int)
+        self.viewable = True
         self.memory= []
 
     def step(self, action):
@@ -22,18 +23,16 @@ class CustomEnv(gym.Env):
 
     def reset(self):
         del self.game
-        self.game = GameFile()
+        self.game = TreasureHunt()
         obs = self.game.observe()
         return obs
 
-    def render(self, mode='human'):
-        self.game.view()
+    def render(self, mode='human', close=False):
+        if self.viewable:
+            self.game.view()
 
-    def close(self):
-        print("close")
-
-    # def set_view(self, flag):
-    #     self.is_view = flag
+    def set_view(self, val):
+        self.viewable = val
 
     # def save_memory(self, file):
     #     np.save(file, self.memory)
