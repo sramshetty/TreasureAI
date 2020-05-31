@@ -25,8 +25,8 @@ class Player:
     def set_position(self, pos):
         self.pos = pos
 
-    def proximity(self):
-        pass
+    def proximity(self, target):
+        return math.sqrt(math.pow((target.pos[0] - self.pos[0]), 2) + math.pow((target.pos[1] - self.pos[1]), 2))
 
     def treasure(self):
         # if position of player is same as treasure, treasure should return true
@@ -50,7 +50,7 @@ class Player:
             if self.pos[0] <= 0:
                 self.pos[0] = 0
             else:
-                self.pos[0] = 480
+                self.pos[0] = 480 
             x_bound = True
         if self.pos[1] <= 0 or self.pos[1] >= 780: # Check for y boundaries of game, top and bottom sides
             if self.pos[1] <= 0:
@@ -59,10 +59,10 @@ class Player:
                 self.pos[1] = 780
             y_bound = True
         for i in range(21):
-            if not x_bound and ((map.get_at((self.pos[0], self.pos[1] + i)) == (0,0,0)) or (map.get_at((self.pos[0] + 20, self.pos[1] + i)) == (0,0,0))):
+            if (self.pos[1] + i >= 0 and self.pos[1] + i <= 780) and not x_bound and ((map.get_at((self.pos[0], self.pos[1] + i)) == (0,0,0)) or (map.get_at((self.pos[0] + 20, self.pos[1] + i)) == (0,0,0))):
                 x_bound = True
                 self.alive = False
-            if not y_bound and ((map.get_at((self.pos[0] + i, self.pos[1])) == (0,0,0)) or (map.get_at((self.pos[0] + i, self.pos[1] + 20)) == (0,0,0))):
+            if (self.pos[0] + i >= 0 and self.pos[0] + i <= 480) and not y_bound and ((map.get_at((self.pos[0] + i, self.pos[1])) == (0,0,0)) or (map.get_at((self.pos[0] + i, self.pos[1] + 20)) == (0,0,0))):
                 y_bound = True
                 self.alive = False
 
@@ -159,7 +159,7 @@ class TreasureHunt:
     def evaluate(self):
         reward = 0
         if not self.player.alive:
-            reward = -10000 + self.player.proximity
+            reward = -10000 + (1000 * (1/(self.player.proximity + 1)))
         elif self.player.treasure:
             reward = 100
         return reward
@@ -184,10 +184,6 @@ class TreasureHunt:
 
     def end(self):
         pass
-
-
-def get_distance(p1, p2):
-    return math.sqrt(math.pow((p1[0] - p2[0]), 2) + math.pow((p1[1] - p2[1]), 2))
 
 
 pygame.init()
@@ -215,3 +211,5 @@ while alive and active:
     time.sleep(.01)
     
     pygame.display.update()
+
+print(TH.player.proximity(TH.treasure))
