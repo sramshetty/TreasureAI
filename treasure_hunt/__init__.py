@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 
 register(
-    id='game-v0',
+    id='TreasureHunt-v0',
     entry_point='treasure_hunt.envs:CustomEnv',
     max_episode_steps = 5000,
 )

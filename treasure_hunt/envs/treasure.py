@@ -5,7 +5,6 @@ import time
 
 screen_width = 500
 screen_height = 800
-# check_point = ((1200, 660), (1250, 120), (190, 200), (1030, 270), (250, 475), (650, 690))
 
 class Player:
     def __init__(self, ai_player_file, map_file):
@@ -14,6 +13,7 @@ class Player:
         self.pos = [0, 0]
         self.speed_x = 1
         self.speed_y = 1
+        self.proximity = 0
         self.alive = True
 
     def is_player(self):
@@ -28,8 +28,8 @@ class Player:
     def set_position(self, pos):
         self.pos = pos
 
-    def proximity(self, target):
-        return math.sqrt(math.pow((target.pos[0] - self.pos[0]), 2) + math.pow((target.pos[1] - self.pos[1]), 2))
+    def set_proximity(self, target):
+        self.proximity = int(math.sqrt(math.pow((target.pos[0] - self.pos[0]), 2) + math.pow((target.pos[1] - self.pos[1]), 2)))
 
     def treasure(self):
         # if position of player is same as treasure, treasure should return true
@@ -51,21 +51,21 @@ class Player:
         y_bound = False
         if self.pos[0] <= 0 or self.pos[0] >= 480: # Check for x boundaries of game, left and right sides
             if self.pos[0] <= 0:
-                self.pos[0] = 0
+                self.pos[0] = 1
             else:
-                self.pos[0] = 480 
+                self.pos[0] = 479 
             x_bound = True
         if self.pos[1] <= 0 or self.pos[1] >= 780: # Check for y boundaries of game, top and bottom sides
             if self.pos[1] <= 0:
-                self.pos[1] = 0
+                self.pos[1] = 1
             else:
-                self.pos[1] = 780
+                self.pos[1] = 779
             y_bound = True
         for i in range(21):
-            if (self.pos[1] + i >= 0 and self.pos[1] + i <= 780) and not x_bound and ((map.get_at((self.pos[0], self.pos[1] + i)) == (0,0,0)) or (map.get_at((self.pos[0] + 20, self.pos[1] + i)) == (0,0,0))):
+            if (self.pos[1] + i >= 0 and self.pos[1] + i <= 780) and not x_bound and ((self.map.get_at((self.pos[0], self.pos[1] + i)) == (0,0,0)) or (self.map.get_at((self.pos[0] + 20, self.pos[1] + i)) == (0,0,0))):
                 x_bound = True
                 self.alive = False
-            if (self.pos[0] + i >= 0 and self.pos[0] + i <= 480) and not y_bound and ((map.get_at((self.pos[0] + i, self.pos[1])) == (0,0,0)) or (map.get_at((self.pos[0] + i, self.pos[1] + 20)) == (0,0,0))):
+            if (self.pos[0] + i >= 0 and self.pos[0] + i <= 480) and not y_bound and ((self.map.get_at((self.pos[0] + i, self.pos[1])) == (0,0,0)) or (self.map.get_at((self.pos[0] + i, self.pos[1] + 20)) == (0,0,0))):
                 y_bound = True
                 self.alive = False
 
@@ -90,43 +90,34 @@ class Player:
         length = 0  # diagonal lengths will be longer, since a length of 10 would be 7 pixels along the diagonal, so must set differently based on given direction
         if direction == "N":
             offset = [0, -10]
-            length = 10
+            length = 100
         elif direction == "NE":
             offset = [10, -10]
-            length = 7
+            length = 70
         elif direction == "E":
             offset = [10, 0]
-            length = 10
+            length = 100
         elif direction == "SE":
             offset = [10, 10]
-            length = 7
+            length = 70
         elif direction == "S":
             offset = [0, 10]
-            length = 10
+            length = 100
         elif direction == "SW":
             offset = [-10, 10]
-            length = 7
+            length = 70
         elif direction == "W":
             offset = [-10, 0]
-            length = 10
+            length = 100
         elif direction == "NW":
             offset = [-10, -10]
-            length = 7
+            length = 70
 
         x = center[0] + offset[0]
         y = center[1] + offset[1]
-
-        for i in range(length+1): 
-            scale_x = offset[0] // 10
-            scale_y = offset[1] // 10
-            pixel = self.map.get_at((x + (i * scale_x), y + (i * scale_y)))
-            if pixel == (0, 0, 0): # black border
-                return [i, 1]
-            elif pixel == (255, 0, 0):  # enemy
-                return [i, 2]
-            elif pixel == (255, 255, 0): #treasure
-                return [i, 3]
-        return [0, 0]
+        length = min(499 - x, x - 0, 799 - y, y - 0, length)
+        # print(min(499 - x, x - 0, 799 - y, y - 0, length), direction, x, y)
+        return (offset, length, x, y)
     '''
     Represents the distance of the next object in the 8 Cardinal Directions, max distance is 10
     0 means no object at any length up to 10 in a given direction; all other integers(1,...,10) means
@@ -149,6 +140,17 @@ class Enemy(Player):
     def is_player(self):
         return False
 
+    def found(self, obj=None, pixel=None):
+        if obj != None:
+            pos = obj.pos
+        elif pixel != None:
+            pos = pixel
+        else:
+            pos = [0, 0]
+        if (abs(self.pos[0] - pos[0]) < 20) and (abs(self.pos[1] - pos[1]) < 20):
+            return True
+        return False
+
 class Treasure:
     def __init__(self, treasure_player_file):
         self.treasure = pygame.image.load(treasure_player_file)
@@ -160,9 +162,15 @@ class Treasure:
     '''
     Determines if object (player) has reached the treasure by checking if the positions of both overlap somewhere
     '''
-    def found(self, obj):
-        if ((abs(self.pos[0] - obj.pos[0]) < 20) or (abs(obj.pos[0] - self.pos[0]) < 40)) and ((abs(self.pos[1] - obj.pos[1]) < 20) or (abs(obj.pos[1] - self.pos[1]) < 40)):
-            if obj.is_player():
+    def found(self, obj=None, pixel=None):
+        if obj != None:
+            pos = obj.pos
+        elif pixel != None:
+            pos = pixel
+        else:
+            pos = [0, 0]
+        if ((abs(self.pos[0] - pos[0]) < 20) or (abs(pos[0] - self.pos[0]) < 40)) and ((abs(self.pos[1] - pos[1]) < 20) or (abs(pos[1] - self.pos[1]) < 40)):
+            if (obj != None) and obj.is_player():
                 obj.proximity = 0
             return True
         return False
@@ -172,10 +180,14 @@ class TreasureHunt:
         pygame.init()
         self.screen = pygame.display.set_mode((screen_width, screen_height))
         self.clock = pygame.time.Clock()
-        self.game_speed = 60
+        self.game_speed = 1000
         self.player = Player('AIplayer.png', 'map.png')
         self.enemy = Enemy('Enemy.png')
         self.treasure = Treasure('treasure.png')
+        # self.set_positions() randomizes positions of player, enemy, and treasure
+        self.player.set_position([380, 500])
+        self.enemy.set_position([330, 300])
+        self.treasure.set_position([350, 700])
 
     def get_positions(self, obj):
         return obj.pos
@@ -195,7 +207,7 @@ class TreasureHunt:
             open = True
             for w in range(width):
                 for h in range(height):
-                    if map.get_at((x+w, y+h)) == (0,0,0):
+                    if self.player.map.get_at((x+w, y+h)) == (0,0,0):
                         open = False
             if open:
                 pos = [x, y]
@@ -222,73 +234,104 @@ class TreasureHunt:
                 taken = False
 
 
-    def action(self, action_x, action_y):
+    def action(self, val):
         x = y = 0
-        if action_x == 0:
+        if val == 0:
             x = -1
-        elif action_x == 1:
+        elif val == 1:
             x = 1
-        if action_y == 0:
+        elif val == 2:
             y = -1
-        elif action_y == 1:
+        elif val == 3:
             y = 1
         self.player.update(x, y)
 
     def evaluate(self):
         reward = 0
+        self.player.set_proximity(self.treasure)
         if not self.player.alive:
-            reward = -10000 + (1000 * (1/(self.player.proximity + 1)))
+            print(self.player.proximity)
+            reward = -10000 + (10000 * (1/self.player.proximity)* 100)
         elif self.treasure.found(self.player):
-            reward = 10000
+            reward = 100000
         return reward
 
-    def is_done(self):
-        if not self.player.alive or self.player.treasure:
-            self.player.current_check = 0
-            self.player.distance = 0
-            return True
-        return False
-
     def observe(self):
-        pass
+        local = []
+        for check in self.player.surroundings():
+            offset = check[0]
+            length = check[1]
+            x = check[2]
+            y = check[3]
+            obj_found = False
+            for i in range(1, length+1): 
+                scale_x = offset[0] // 10
+                scale_y = offset[1] // 10
+                pix = (x + (i * scale_x), y + (i * scale_y))
+                if self.player.map.get_at(pix) == (0, 0, 0): # black border
+                    local.append(1 + (i // 10)/100)
+                    obj_found = True
+                    break
+                elif self.enemy.found(pixel=pix): # enemy
+                    local.append(2 + (i // 10)/100)
+                    obj_found = True
+                    break
+                elif self.treasure.found(pixel=pix): #treasure
+                    local.append((i // 10)/100)
+                    obj_found = True
+                    break
+            if not obj_found:
+                local.append(0)
+        return local
 
     def view(self):
-        self.screen.blit(self.player.map, (0, 0))
-        self.screen.fill((0, 0, 0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                active = False
+                pygame.quit()
+                quit()
+
+        self.screen.blit(self.player.map, [0, 0])
+        self.screen.blit(self.treasure.treasure, self.get_positions(self.treasure))
+        self.screen.blit(self.player.player, self.get_positions(self.player))
+        self.screen.blit(self.enemy.enemy, self.get_positions(self.enemy))
+
+        pygame.display.update()
 
         pygame.display.flip()
         self.clock.tick(self.game_speed)
 
     def end(self):
-        if not self.player.alive or (self.treasure.found(self.player)):
-            return False 
+        if not self.player.alive or self.treasure.found(self.player) or  self.enemy.found(self.player):
+            return True
+        return False 
 
 
-pygame.init()
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Treasure Hunt AI")
-map = pygame.image.load('map.png')
-TH = TreasureHunt()
-TH.set_positions()
-alive = TH.player.alive
-active = True
-while alive and active:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            active = False
-            pygame.quit()
-            quit()
+# pygame.init()
+# screen = pygame.display.set_mode((screen_width, screen_height))
+# pygame.display.set_caption("Treasure Hunt AI")
+# map = pygame.image.load('map.png')
+# TH = TreasureHunt()
+# TH.set_positions()
+# alive = TH.player.alive
+# active = True
+# while alive and active:
+#     for event in pygame.event.get():
+#         if event.type == pygame.QUIT:
+#             active = False
+#             pygame.quit()
+#             quit()
 
-    screen.blit(TH.player.map, [0, 0])
-    screen.blit(TH.treasure.treasure, TH.get_positions(TH.treasure))
-    screen.blit(TH.player.player, TH.get_positions(TH.player))
-    screen.blit(TH.enemy.enemy, TH.get_positions(TH.enemy))
-    TH.player.update(1, 1)
-    TH.enemy.update(1, 0)
-    print(TH.player.surroundings())
-    alive = TH.player.alive
-    time.sleep(.01)
+#     screen.blit(TH.player.map, [0, 0])
+#     screen.blit(TH.treasure.treasure, TH.get_positions(TH.treasure))
+#     screen.blit(TH.player.player, TH.get_positions(TH.player))
+#     screen.blit(TH.enemy.enemy, TH.get_positions(TH.enemy))
+#     TH.player.update(1, 1)
+#     print(TH.player.surroundings())
+#     alive = TH.player.alive
+#     time.sleep(.01)
     
-    pygame.display.update()
+#     pygame.display.update()
 
-print(TH.player.proximity(TH.treasure))
+# print(TH.enemy.enemy.get_at((0,0)))
+# print(TH.treasure.treasure.get_at((0,0)))
