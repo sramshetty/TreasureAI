@@ -188,6 +188,9 @@ class TreasureHunt:
         self.player.set_position([380, 500])
         self.enemy.set_position([330, 300])
         self.treasure.set_position([350, 700])
+        self.player.set_proximity(self.treasure)
+        self.og_relative = self.player.proximity
+        self.best_prox = self.player.proximity
 
     def get_positions(self, obj):
         return obj.pos
@@ -250,10 +253,16 @@ class TreasureHunt:
         reward = 0
         self.player.set_proximity(self.treasure)
         if not self.player.alive:
-            print(self.player.proximity)
-            reward = -10000 + (10000 * (1/self.player.proximity)* 100)
+            reward = -10000
+        elif self.enemy.found(self.player):
+            reward = -20000
         elif self.treasure.found(self.player):
-            reward = 100000
+            reward = 10000
+        else:
+            temp = self.best_prox
+            if self.player.proximity < self.best_prox:
+                self.best_prox = self.player.proximity
+            reward = temp  - self.player.proximity
         return reward
 
     def observe(self):
@@ -269,15 +278,15 @@ class TreasureHunt:
                 scale_y = offset[1] // 10
                 pix = (x + (i * scale_x), y + (i * scale_y))
                 if self.player.map.get_at(pix) == (0, 0, 0): # black border
-                    local.append(1 + (i // 10)/100)
+                    local.append(3)
                     obj_found = True
                     break
                 elif self.enemy.found(pixel=pix): # enemy
-                    local.append(2 + (i // 10)/100)
+                    local.append(2)
                     obj_found = True
                     break
                 elif self.treasure.found(pixel=pix): #treasure
-                    local.append((i // 10)/100)
+                    local.append(1)
                     obj_found = True
                     break
             if not obj_found:

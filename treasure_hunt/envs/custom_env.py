@@ -10,7 +10,7 @@ class CustomEnv(gym.Env):
     def __init__(self):
         self.game = TreasureHunt()
         self.action_space = spaces.Discrete(4)
-        self.observation_space = spaces.Box(np.array([0., 0., 0., 0., 0., 0., 0., 0.]), np.array([3.10, 3.07, 3.10, 3.07, 3.1, 3.07, 3.1, 3.07]), dtype=np.float)
+        self.observation_space = spaces.Box(np.array([0, 0, 0, 0, 0, 0, 0, 0]), np.array([3, 3, 3, 3, 3, 3, 3, 3]), dtype=np.int)
         self.viewable = True
         self.memory= []
 

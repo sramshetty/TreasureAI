@@ -47,10 +47,6 @@ def simulate():
             state_0 = state
             env.render()
             if done or t >= MAX_T - 1:
-                if t == MAX_T - 1:
-                    total_reward = -20000
-                elif total_reward > 0:
-                    total_reward = total_reward - t
                 print("Episode %d finished after %i time steps with total reward = %f."
                       % (episode, t, total_reward))
                 break
@@ -219,7 +215,7 @@ if __name__ == "__main__":
     STATE_BOUNDS = list(zip(env.observation_space.low, env.observation_space.high))
 
     MIN_EXPLORE_RATE = 0.001
-    MIN_LEARNING_RATE = 0.2
+    MIN_LEARNING_RATE = 0.5
     DECAY_FACTOR = np.prod(NUM_BUCKETS, dtype=float) / 10.0
     print(DECAY_FACTOR)
     print(NUM_BUCKETS)
