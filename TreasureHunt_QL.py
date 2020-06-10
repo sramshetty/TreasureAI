@@ -226,4 +226,3 @@ if __name__ == "__main__":
 
     q_table = np.zeros(NUM_BUCKETS + (NUM_ACTIONS,), dtype=float)
     simulate()
-    #load_and_play()

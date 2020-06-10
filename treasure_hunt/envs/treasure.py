@@ -256,10 +256,10 @@ class TreasureHunt:
     def evaluate(self):
         reward = 0
         self.player.set_proximity(self.treasure)
-        if not self.player.alive:
+        if not self.player.alive or self.enemy.found(self.player):
             reward = -10000 + (5000 - self.player.proximity)
-        elif self.enemy.found(self.player):
-            reward = -20000
+        # elif self.enemy.found(self.player):
+        #     reward = -20000
         elif self.treasure.found(self.player):
             reward = 10000
         else:
@@ -282,18 +282,24 @@ class TreasureHunt:
                 scale_x = offset[0] // 10
                 scale_y = offset[1] // 10
                 pix = (x + (i * scale_x), y + (i * scale_y))
-                if self.player.map.get_at(pix) == (0, 0, 0): # black border
-                    local.append(1)
+                if (self.player.map.get_at(pix) == (0, 0, 0)) or self.enemy.found(pixel=pix): # black border
+                    shift = 0
+                    if i//10 == 0:
+                        shift = 1
+                    local.append(i//10 + shift)
                     obj_found = True
                     break
                 # elif self.enemy.found(pixel=pix): # enemy
                 #     local.append(2)
                 #     obj_found = True
                 #     break
-                # elif self.treasure.found(pixel=pix): #treasure
-                #     local.append(1)
-                #     obj_found = True
-                #     break
+                elif self.treasure.found(pixel=pix): #treasure
+                    shift = 0
+                    if i//10 == 0:
+                        shift = -1
+                    local.append(0 - i//10 + shift)
+                    obj_found = True
+                    break
             if not obj_found:
                 local.append(0)
         return local
