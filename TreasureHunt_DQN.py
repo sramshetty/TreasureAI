@@ -28,13 +28,17 @@ class DQN:
 
     def create_model(self):
         model   = Sequential()
+        
         state_shape  = self.env.observation_space.shape
-        model.add(Dense(24, input_dim=state_shape, activation="relu"))
+
+        model.add(Dense(24, input_dim=state_shape[0], activation="relu"))
         model.add(Dense(48, activation="relu"))
         model.add(Dense(24, activation="relu"))
         model.add(Dense(self.env.action_space.n))
+
         model.compile(loss="mean_squared_error",
             optimizer=Adam(lr=self.learning_rate))
+
         return model
 
     def act(self, state):
@@ -73,25 +77,18 @@ class DQN:
     def save_model(self, fn):
         self.model.save(fn)
 
-if __name__ == "__main__":
-    env     = gym.make("TreasureHunt-v0")
-    gamma   = 0.9
-    epsilon = .95
-
-    trials  = 1000
-    trial_len = 500
-
-    # updateTargetNetwork = 1000
+def simulate(env, gamma, epsilon, num_trials, trial_length):
     dqn_agent = DQN(env=env)
     steps = []
+    env.set_view(True)
     for trial in range(trials):
-        cur_state = env.reset()
+        cur_state = np.array(env.reset()).reshape(1, 8)
         for step in range(trial_len):
             action = dqn_agent.act(cur_state)
             new_state, reward, done, _ = env.step(action)
 
             # reward = reward if not done else -20
-            new_state = new_state
+            new_state = np.array(new_state).reshape(1, 8)
             dqn_agent.remember(cur_state, action, reward, new_state, done)
             
             dqn_agent.replay()       # internally iterates default (prediction) model
@@ -100,7 +97,8 @@ if __name__ == "__main__":
             cur_state = new_state
             if done:
                 break
-        if step >= 199:
+        env.render()
+        if step >= 2000:
             print("Failed to complete in trial {}".format(trial))
             if step % 10 == 0:
                 dqn_agent.save_model("trial-{}.model".format(trial))
@@ -109,4 +107,12 @@ if __name__ == "__main__":
             dqn_agent.save_model("success.model")
             break
 
+if __name__ == "__main__":
+    env     = gym.make("TreasureHunt-v0")
+    gamma   = 0.9
+    epsilon = .95
 
+    trials  = 1000
+    trial_len = 3000
+
+    simulate(env, gamma, epsilon, trials, trial_len)
