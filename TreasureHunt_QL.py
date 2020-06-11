@@ -13,7 +13,7 @@ def simulate():
     total_reward = 0
     total_rewards = []
     training_done = False
-    threshold = 1000
+    threshold = 5000
     env.set_view(True)
     for episode in range(NUM_EPISODES):
 

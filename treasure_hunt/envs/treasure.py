@@ -185,13 +185,13 @@ class TreasureHunt:
         self.screen = pygame.display.set_mode((screen_width, screen_height))
         self.clock = pygame.time.Clock()
         self.game_speed = 1000
-        self.player = Player('AIplayer.png', 'map_easy.png')
+        self.player = Player('AIplayer.png', 'map_simple.png')
         self.enemy = Enemy('Enemy.png')
         self.treasure = Treasure('treasure.png')
         # self.set_positions() randomizes positions of player, enemy, and treasure
-        self.player.set_position([20, 10])
-        self.enemy.set_position([20, 360])
-        self.treasure.set_position([150, 340])
+        self.player.set_position([60, 120])     # Simple: [60, 120], Easy: [], Medium: [], Full Map: []
+        self.enemy.set_position([290, 105])     # Simple: [290, 105], Easy: [], Medium: [], Full Map: []
+        self.treasure.set_position([260, 280])  # Simple: [260, 280], Easy: [], Medium: [], Full Map: []
         self.player.set_proximity(self.treasure)
         self.og_relative = self.player.proximity
         self.best_prox = self.player.proximity
@@ -253,21 +253,36 @@ class TreasureHunt:
             y = 1
         self.player.update(x, y)
 
-    def evaluate(self):
+    def evaluate(self, observation, action):
         reward = 0
+        opt = [i for i,x in enumerate(observation) if x==0]
+        if len(opt) == 0:
+            if min(observation) < 0:
+                opt = opt = [i for i,x in enumerate(observation) if x==min(observation)]
+            else:
+                m = max(observation)
+                opt = [i for i,x in enumerate(observation) if x==m]
         self.player.set_proximity(self.treasure)
-        if not self.player.alive or self.enemy.found(self.player):
-            reward = -10000 + (5000 - self.player.proximity)
-        # elif self.enemy.found(self.player):
-        #     reward = -20000
+        if not self.player.alive:
+            reward = - self.player.proximity * 5
+        elif self.enemy.found(self.player):
+            reward = -20000
         elif self.treasure.found(self.player):
             reward = 10000
         else:
-            temp = self.best_prox
-            if self.player.proximity > self.best_prox:
-                reward = -5
-            elif self.player.proximity < self.best_prox:
-                self.best_prox = self.player.proximity
+            reward = -10
+            if action == 0:
+                if 5 in opt or 6 in opt or 7 in opt:
+                    reward = 10
+            elif action == 1:
+                if 1 in opt or 2 in opt or 3 in opt:
+                    reward = 10
+            elif action == 2:
+                if 7 in opt or 0 in opt or 1 in opt:
+                    reward = 10
+            else:
+                if 3 in opt or 4 in opt or 5 in opt:
+                    reward = 10
         return reward
 
     def observe(self):

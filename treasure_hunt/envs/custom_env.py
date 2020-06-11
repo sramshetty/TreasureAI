@@ -17,7 +17,7 @@ class CustomEnv(gym.Env):
     def step(self, action):
         self.game.action(action)
         obs = self.game.observe()
-        reward = self.game.evaluate()
+        reward = self.game.evaluate(obs, action)
         end = self.game.end()
         return obs, reward, end, {}
 
