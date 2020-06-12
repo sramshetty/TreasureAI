@@ -31,8 +31,8 @@ class DQN:
         
         state_shape  = self.env.observation_space.shape
 
-        model.add(Dense(24, input_dim=state_shape[0], activation="relu"))
-        model.add(Dense(48, activation="relu"))
+        model.add(Dense(8, input_dim=state_shape[0], activation="relu"))
+        model.add(Dense(100, activation="relu"))
         model.add(Dense(24, activation="relu"))
         model.add(Dense(self.env.action_space.n))
 
@@ -80,28 +80,35 @@ class DQN:
 def simulate(env, gamma, epsilon, num_trials, trial_length):
     dqn_agent = DQN(env=env)
     steps = []
+    total_reward = 0
     env.set_view(True)
-    for trial in range(trials):
+    for trial in range(num_trials):
         cur_state = np.array(env.reset()).reshape(1, 8)
-        for step in range(trial_len):
+
+        total_reward = 0
+        for step in range(trial_length):
             action = dqn_agent.act(cur_state)
             new_state, reward, done, _ = env.step(action)
 
-            # reward = reward if not done else -20
+            total_reward += reward
+
             new_state = np.array(new_state).reshape(1, 8)
-            dqn_agent.remember(cur_state, action, reward, new_state, done)
+            dqn_agent.remember(cur_state, action, reward, new_state, done) #same as environment's store function
             
             dqn_agent.replay()       # internally iterates default (prediction) model
             dqn_agent.target_train() # iterates target model
 
             cur_state = new_state
+            env.render()
             if done:
+                print("Episode %d finished after %i time steps with total reward = %f."
+                      % (trial, step, total_reward))
                 break
-        env.render()
-        if step >= 2000:
+        if total_reward < 5000:
             print("Failed to complete in trial {}".format(trial))
-            if step % 10 == 0:
-                dqn_agent.save_model("trial-{}.model".format(trial))
+        elif total_reward > 0:
+            print("Failed to complete in trial {}".format(trial))
+            dqn_agent.save_model("trial-{}.model".format(trial))
         else:
             print("Completed in {} trials".format(trial))
             dqn_agent.save_model("success.model")
