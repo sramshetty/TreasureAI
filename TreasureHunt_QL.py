@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import math
 
 
-def simulate():
+def simulate(diff):
     learning_rate = get_learning_rate(0)
     explore_rate = get_explore_rate(0)
     discount_factor = 0.99
@@ -15,6 +15,7 @@ def simulate():
     training_done = False
     threshold = 5000
     env.set_view(True)
+    env.set_difficulty(diff)
     for episode in range(NUM_EPISODES):
 
         total_rewards.append(total_reward)
@@ -210,6 +211,9 @@ def load_data(file):
 if __name__ == "__main__":
 
     env = gym.make("TreasureHunt-v0")
+
+    diff = input("Difficulty (simple, easy, medium, or full): ")
+
     NUM_BUCKETS = tuple((env.observation_space.high + np.ones(env.observation_space.shape)).astype(int))
     NUM_ACTIONS = env.action_space.n
     STATE_BOUNDS = list(zip(env.observation_space.low, env.observation_space.high))
@@ -225,4 +229,4 @@ if __name__ == "__main__":
     #MAX_T = np.prod(NUM_BUCKETS, dtype=int) * 100
 
     q_table = np.zeros(NUM_BUCKETS + (NUM_ACTIONS,), dtype=float)
-    simulate()
+    simulate(diff)

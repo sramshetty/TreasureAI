@@ -3,8 +3,6 @@ import math
 import random
 import time
 
-screen_width = 400 # Med=600 Hard=500
-screen_height = 400 # Med=400 Hard=800
 
 class Player:
     def __init__(self, ai_player_file, map_file):
@@ -180,18 +178,20 @@ class Treasure:
         return False
 
 class TreasureHunt:
-    def __init__(self):
+    def __init__(self, difficulty):
         pygame.init()
+        screen_width = 600 if difficulty == "medium" else 500 if difficulty == "full" else 400
+        screen_height = 800 if difficulty == "full" else 400
         self.screen = pygame.display.set_mode((screen_width, screen_height))
         self.clock = pygame.time.Clock()
         self.game_speed = 1000
-        self.player = Player('AIplayer.png', 'map_simple.png')
+        self.player = Player('AIplayer.png', 'map_simple.png' if difficulty == "simple" else 'map_easy.png' if difficulty == "easy" else 'map_med.png' if difficulty == "medium" else 'map.png' if difficulty == "full" else 'map_simple.png')
         self.enemy = Enemy('Enemy.png')
         self.treasure = Treasure('treasure.png')
         # self.set_positions() randomizes positions of player, enemy, and treasure
-        self.player.set_position([60, 120])     # Simple: [60, 120], Easy: [], Medium: [], Full Map: []
-        self.enemy.set_position([290, 105])     # Simple: [290, 105], Easy: [], Medium: [], Full Map: []
-        self.treasure.set_position([260, 280])  # Simple: [260, 280], Easy: [], Medium: [], Full Map: []
+        self.player.set_position([60, 120] if difficulty == "simple" else [30, 20] if difficulty == "easy" else [10, 20] if difficulty == "medium" else [10, 160] if difficulty == "full" else [0,0])
+        self.enemy.set_position([290, 105] if difficulty == "simple" else [150, 360] if difficulty == "easy" else [320, 160] if difficulty == "medium" else [50, 250] if difficulty == "full" else [0,0])
+        self.treasure.set_position([260, 280] if difficulty == "simple" else [320, 340] if difficulty == "easy" else [10, 180] if difficulty == "medium" else [430, 630] if difficulty == "full" else [0,0])
         self.player.set_proximity(self.treasure)
         self.og_relative = self.player.proximity
         self.best_prox = self.player.proximity

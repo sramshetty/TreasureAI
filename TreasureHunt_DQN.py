@@ -77,11 +77,12 @@ class DQN:
     def save_model(self, fn):
         self.model.save(fn)
 
-def simulate(env, gamma, epsilon, num_trials, trial_length):
+def simulate(env, gamma, epsilon, num_trials, trial_length, diff):
     dqn_agent = DQN(env=env)
     steps = []
     total_reward = 0
     env.set_view(True)
+    env.set_difficulty(diff)
     for trial in range(num_trials):
         cur_state = np.array(env.reset()).reshape(1, 8)
 
@@ -100,7 +101,7 @@ def simulate(env, gamma, epsilon, num_trials, trial_length):
 
             cur_state = new_state
             env.render()
-            if done:
+            if done or step >= trial_length-1:
                 print("Episode %d finished after %i time steps with total reward = %f."
                       % (trial, step, total_reward))
                 break
@@ -120,6 +121,8 @@ if __name__ == "__main__":
     epsilon = .95
 
     trials  = 1000
-    trial_len = 3000
+    trial_len = 1000
 
-    simulate(env, gamma, epsilon, trials, trial_len)
+    diff = input("Difficulty (simple, easy, medium, or full): ")
+
+    simulate(env, gamma, epsilon, trials, trial_len, diff)

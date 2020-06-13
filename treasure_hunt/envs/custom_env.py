@@ -8,7 +8,8 @@ class CustomEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
-        self.game = TreasureHunt()
+        self.difficulty = "simple"
+        self.game = TreasureHunt(self.difficulty)
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(np.array([-10, -7, -10, -7, -10, -7, -10, -7]), np.array([10, 7, 10, 7, 10, 7, 10, 7]), dtype=np.int)
         self.viewable = True
@@ -23,7 +24,7 @@ class CustomEnv(gym.Env):
 
     def reset(self):
         del self.game
-        self.game = TreasureHunt()
+        self.game = TreasureHunt(self.difficulty)
         obs = self.game.observe()
         return obs
 
@@ -40,3 +41,6 @@ class CustomEnv(gym.Env):
 
     def store(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
+
+    def set_difficulty(self, dif):
+        self.difficulty = dif
