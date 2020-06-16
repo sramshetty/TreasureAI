@@ -1,5 +1,8 @@
 # Treasure AI
-An AI that attempts to find a treasure in an OpenAI environment. The AI uses reinforcement learning in two forms: Q-Learning and DQN. 
+An AI that attempts to find a treasure in an OpenAI environment. The AI uses reinforcement learning in two forms: Q-Learning and DQN.
+
+# How To Run
+  
 
 ## Resources Used
 * Pygame and OpenAI Gym
@@ -8,4 +11,5 @@ An AI that attempts to find a treasure in an OpenAI environment. The AI uses rei
 
 ## Map Difficulties
 * Simple
-(../map_simple.png)
+![Alt text](map_simple.png)
+
