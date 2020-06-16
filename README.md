@@ -10,6 +10,6 @@ An AI that attempts to find a treasure in an OpenAI environment. The AI uses rei
 * DQN framework from [https://towardsdatascience.com/reinforcement-learning-w-keras-openai-dqns-1eed3a5338c]
 
 ## Map Difficulties
-* Simple
+* Simple   
 ![Alt text](map_simple.png)
 
