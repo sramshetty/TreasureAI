@@ -13,3 +13,12 @@ An AI that attempts to find a treasure in an OpenAI environment. The AI uses rei
 * Simple   
 ![Alt text](map_simple.png)
 
+* Easy   
+![Alt text](map_easy.png)
+
+* Medium   
+![Alt text](map_med.png)
+
+* Full(Most Complex)   
+![Alt text](map.png)
+
