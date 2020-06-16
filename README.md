@@ -3,11 +3,15 @@ An AI that attempts to find a treasure in an OpenAI environment. The AI uses rei
 
 # How To Run
 * Q-Learning Method    
+    ```
     python TreasureHunt_QL.py
     Difficulty (simple, easy, medium, or full): (Enter Difficulty of Map)
+    ```
 * DQN Method   
+    ```
     python TreasureHunt_QL.py
     Difficulty (simple, easy, medium, or full): (Enter Difficulty of Map)
+    ```
 ## Resources Used
 * Pygame and OpenAI Gym
 * Q-Learning framework and project organization from [https://github.com/monokim/PyRacing]
