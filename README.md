@@ -9,7 +9,7 @@ An AI that attempts to find a treasure in an OpenAI environment. The AI uses rei
     ```
 * DQN Method   
     ```
-    python TreasureHunt_QL.py
+    python TreasureHunt_DQN.py
     Difficulty (simple, easy, medium, or full): (Enter Difficulty of Map)
     ```
 ## Resources Used
