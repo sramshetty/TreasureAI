@@ -58,7 +58,9 @@ class DQN:
 
         samples = random.sample(self.memory, batch_size)
         for sample in samples:
+
             state, action, reward, new_state, done = sample
+            
             target = self.target_model.predict(state)
             if done:
                 target[0][action] = reward

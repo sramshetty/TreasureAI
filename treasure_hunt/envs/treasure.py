@@ -75,12 +75,7 @@ class Player:
     '''
     Calculates distance up to 10 in a certain direction, returns the length of next object and what type of object
     Parameter: direction = string of cardinal direction in acronym form i.e. "N", "SE", "W", etc.
-    Return: [distance, object_type]
-        object_type: 
-            0 = no object
-            1 = black borders
-            2 = enemy
-            3 = treasure
+    Return: tuple containg the offset in specified direction, length in specified direction, x position, and y position
     '''
     def cardinal(self, direction):
         center = [self.pos[0]+10, self.pos[1]+10]
@@ -117,9 +112,7 @@ class Player:
         # print(min(499 - x, x - 0, 799 - y, y - 0, length), direction, x, y)
         return (offset, length, x, y)
     '''
-    Represents the distance of the next object in the 8 Cardinal Directions, max distance is 10
-    0 means no object at any length up to 10 in a given direction; all other integers(1,...,10) means
-    that there exists an object at that distance
+    Finds the tuple of 4 elements for each of the 8 directions
     '''
     def surroundings(self):
         env = [] #surrounding environment
@@ -253,6 +246,15 @@ class TreasureHunt:
             y = 1
         self.player.update(x, y)
 
+    '''
+    Defines how the reinforcement learning models are rewarded based on their performance
+    Currently takes into account its decision given an observation and its proximity to treasure over the course of the game
+    Hitting an enemy is a large penalty
+    Hitting a border has n penalty but score will remain negative based on the proximity
+    At each step a good action based on given observations will be rewarded otherwise penalized
+
+    Finding the treasure will result in a nice reward
+    '''
     def evaluate(self, observation, action):
         reward = 0
         opt = [i for i,x in enumerate(observation) if x==0]
@@ -285,6 +287,13 @@ class TreasureHunt:
                     reward = 10
         return reward
 
+    '''
+    With the tuple for each of 8 directions, checks given distance in each direction to see if an object is within that distance
+    return: 
+        0 = no object
+        1:10 = distance from player of a black border; 1 being closest
+        -1:-10 = distance from player of treasure; -1 being closest
+    '''
     def observe(self):
         local = []
         for check in self.player.surroundings():
@@ -312,13 +321,16 @@ class TreasureHunt:
                     shift = 0
                     if i//10 == 0:
                         shift = -1
-                    local.append(0 - i//10 + shift)
+                    local.append(-(i//10) + shift)
                     obj_found = True
                     break
             if not obj_found:
                 local.append(0)
         return local
 
+    '''
+    Displays the actual game
+    '''
     def view(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -336,37 +348,13 @@ class TreasureHunt:
         pygame.display.flip()
         self.clock.tick(self.game_speed)
 
+    '''
+    Determines whether the game has ended depending on certain conditions:
+        if player dies (hits black border)
+        if player finds treasure
+        if player hits enemy
+    '''
     def end(self):
-        if not self.player.alive or self.treasure.found(self.player) or  self.enemy.found(self.player):
+        if not self.player.alive or self.treasure.found(self.player) or self.enemy.found(self.player):
             return True
         return False 
-
-
-# pygame.init()
-# screen = pygame.display.set_mode((screen_width, screen_height))
-# pygame.display.set_caption("Treasure Hunt AI")
-# map = pygame.image.load('map.png')
-# TH = TreasureHunt()
-# TH.set_positions()
-# alive = TH.player.alive
-# active = True
-# while alive and active:
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT:
-#             active = False
-#             pygame.quit()
-#             quit()
-
-#     screen.blit(TH.player.map, [0, 0])
-#     screen.blit(TH.treasure.treasure, TH.get_positions(TH.treasure))
-#     screen.blit(TH.player.player, TH.get_positions(TH.player))
-#     screen.blit(TH.enemy.enemy, TH.get_positions(TH.enemy))
-#     TH.player.update(1, 1)
-#     print(TH.player.surroundings())
-#     alive = TH.player.alive
-#     time.sleep(.01)
-    
-#     pygame.display.update()
-
-# print(TH.enemy.enemy.get_at((0,0)))
-# print(TH.treasure.treasure.get_at((0,0)))
