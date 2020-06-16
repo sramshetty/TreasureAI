@@ -2,10 +2,10 @@
 An AI that attempts to find a treasure in an OpenAI environment. The AI uses reinforcement learning in two forms: Q-Learning and DQN.
 
 # How To Run
-* Q-Learning Method
+* Q-Learning Method    
     python TreasureHunt_QL.py
     Difficulty (simple, easy, medium, or full): (Enter Difficulty of Map)
-* DQN Method
+* DQN Method   
     python TreasureHunt_QL.py
     Difficulty (simple, easy, medium, or full): (Enter Difficulty of Map)
 ## Resources Used
